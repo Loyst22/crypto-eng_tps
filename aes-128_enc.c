@@ -20,8 +20,9 @@ uint8_t xtime(uint8_t p)
 
 	return ((p << 1) ^ m);
 }
-
-// x^8 + x^6 + x^5 + x^4 + x^3 + x + 1
+/**
+ * Same but in F_2[X]/X^8 + X^6 + X^5 + X^4 + X^3 + X + 1
+ */
 uint8_t xtime_alt(uint8_t p)
 {
 	uint8_t m = p >> 7;
@@ -123,9 +124,18 @@ void next_aes128_round_key(const uint8_t prev_key[16], uint8_t next_key[16], int
 void prev_aes128_round_key(const uint8_t next_key[16], uint8_t prev_key[16], int round)
 {
 	/* WRITE ME */
-  int i;
+	int i;
 
-  prev_key[13] = Sinv[RC[1] ^ next_key[0]];
+	// Recover prev_key[4...15]
+	for (i = 4; i < 16; i++) 
+	{
+		prev_key[i] = next_key[i] ^ next_key[i - 4];
+	}
+
+	prev_key[0] = next_key[0] ^ S[prev_key[13]] ^ RC[round];
+	prev_key[1] = next_key[1] ^ S[prev_key[14]];
+	prev_key[2] = next_key[2] ^ S[prev_key[15]];
+	prev_key[3] = next_key[3] ^ S[prev_key[12]];
 }
 
 /*

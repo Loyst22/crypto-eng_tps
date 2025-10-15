@@ -64,4 +64,6 @@ static const uint8_t Sinv[256] =
  */
 void prev_aes128_round_key(const uint8_t next_key[16], uint8_t prev_key[16], int round);
 
+void next_aes128_round_key(const uint8_t prev_key[16], uint8_t next_key[16], int round);
+
 #endif // __AES-128_ENC__H__
