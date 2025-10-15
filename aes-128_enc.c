@@ -21,6 +21,18 @@ uint8_t xtime(uint8_t p)
 	return ((p << 1) ^ m);
 }
 
+// x^8 + x^6 + x^5 + x^4 + x^3 + x + 1
+uint8_t xtime_alt(uint8_t p)
+{
+	uint8_t m = p >> 7;
+	m ^= 1;
+	m -= 1;
+
+	m &= 0b001111011;
+
+	return ((p << 1) ^ m);
+}
+
 /*
  * The round constants
  */
@@ -111,6 +123,9 @@ void next_aes128_round_key(const uint8_t prev_key[16], uint8_t next_key[16], int
 void prev_aes128_round_key(const uint8_t next_key[16], uint8_t prev_key[16], int round)
 {
 	/* WRITE ME */
+  int i;
+
+  prev_key[13] = Sinv[RC[1] ^ next_key[0]];
 }
 
 /*
