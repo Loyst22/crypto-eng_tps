@@ -5,14 +5,6 @@
 #include <stdbool.h>
 
 
-// void invert_half_round(uint8_t plaintext[AES_BLOCK_SIZE], uint8_t ciphertext[AES_BLOCK_SIZE], uint8_t roundkey[AES_128_KEY_SIZE]) 
-// {
-//   // 1. InvShiftRows
-//   // 2. InvSubBytes
-//   // 3. AddRoundKey
-//
-//
-// }
 
 void invert_shift_rows(uint8_t block[AES_BLOCK_SIZE]) {
 	uint8_t tmp;
@@ -42,6 +34,28 @@ void invert_shift_rows(uint8_t block[AES_BLOCK_SIZE]) {
 	block[15] = S[tmp];
 }
 
+void invert_half_round(uint8_t block[AES_BLOCK_SIZE], uint8_t roundkey[AES_128_KEY_SIZE]) 
+{
+  // 1. AddRoundKey
+  // 2. InvShiftRows
+  // 3. InvSubBytes
+
+
+  // AddRoundKey
+  for (size_t i = 0; i < AES_BLOCK_SIZE; i++) {
+    block[i] = block[i] ^ roundkey[i];
+  }
+
+  // InvShiftRows
+  invert_shift_rows(block);
+
+  // InvSubBytes
+  for (size_t i = 0; i < AES_BLOCK_SIZE; i++) {
+    block[i] = Sinv[block[i]];
+  }
+
+}
+
 void print_block(uint8_t block[AES_BLOCK_SIZE]) {
 
   for (int i = 0; i < AES_BLOCK_SIZE; i++) {
@@ -68,10 +82,19 @@ int main(void)
     aes128_enc(ciphers[i], key, 4, false);
   }
 
+  // TEMP: get last roundkey
+  uint8_t prev_key[AES_128_KEY_SIZE];
+  memcpy(prev_key, key, sizeof(uint8_t)*AES_128_KEY_SIZE);
+  uint8_t next_key[AES_128_KEY_SIZE] = {0};
+  
+  next_aes128_round_key(prev_key, next_key, 0);
+  next_aes128_round_key(next_key, prev_key, 1);
+  next_aes128_round_key(prev_key, next_key, 2);
 
   // go through all ciphertexts
   for (int i = 0; i < 256; i++) {
-    
+    invert_half_round(ciphers[i], );
+
     // XOR all bytes
     for (size_t byte = 0; byte < AES_BLOCK_SIZE; byte++) {
       result[byte] = result[byte] ^ ciphers[i][byte];
