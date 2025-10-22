@@ -28,10 +28,10 @@ void invert_shift_rows(uint8_t block[AES_BLOCK_SIZE]) {
 	block[14] = tmp;
 	/* Row 3 */
 	tmp = block[3];
-	block[ 3] = S[block[ 7]];
-	block[ 7] = S[block[11]];
-	block[11] = S[block[15]];
-	block[15] = S[tmp];
+	block[ 3] = block[ 7];
+	block[ 7] = block[11];
+	block[11] = block[15];
+	block[15] = tmp;
 }
 
 void invert_half_round(uint8_t block[AES_BLOCK_SIZE], uint8_t roundkey[AES_128_KEY_SIZE]) 
