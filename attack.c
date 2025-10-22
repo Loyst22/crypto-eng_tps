@@ -59,7 +59,13 @@ void invert_half_round(uint8_t block[AES_BLOCK_SIZE], uint8_t roundkey[AES_128_K
 void print_block(uint8_t block[AES_BLOCK_SIZE]) {
 
   for (int i = 0; i < AES_BLOCK_SIZE; i++) {
-    printf("%02x", block[i]);
+    printf("%02x ", block[i]);
+  }
+}
+void print_key(uint8_t key[AES_128_KEY_SIZE]) {
+
+  for (int i = 0; i < AES_128_KEY_SIZE; i++) {
+    printf("%02x ", key[i]);
   }
 }
 
@@ -90,10 +96,12 @@ int main(void)
   next_aes128_round_key(prev_key, next_key, 0);
   next_aes128_round_key(next_key, prev_key, 1);
   next_aes128_round_key(prev_key, next_key, 2);
+  next_aes128_round_key(next_key, prev_key, 3);
+  // prev_key has the correct roundkey
 
   // go through all ciphertexts
   for (int i = 0; i < 256; i++) {
-    invert_half_round(ciphers[i], );
+    invert_half_round(ciphers[i], prev_key);
 
     // XOR all bytes
     for (size_t byte = 0; byte < AES_BLOCK_SIZE; byte++) {
@@ -108,7 +116,7 @@ int main(void)
   printf("\n");
 
   // should return all zeros 
-  printf("xor of all c: ");
+  printf("xor of all c: \n\t");
   print_block(result);
   printf("\n");
 
