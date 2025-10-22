@@ -123,7 +123,6 @@ void next_aes128_round_key(const uint8_t prev_key[16], uint8_t next_key[16], int
  */
 void prev_aes128_round_key(const uint8_t next_key[16], uint8_t prev_key[16], int round)
 {
-	/* WRITE ME */
 	int i;
 
 	// Recover prev_key[4...15]
