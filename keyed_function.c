@@ -29,9 +29,7 @@ uint8_t* keyed_func(uint8_t key[2 * AES_128_KEY_SIZE], uint8_t block[AES_BLOCK_S
   return block;
 }
 
-
-int main(void)
-{
+int test_trivial_key() {
   uint8_t key[2 * AES_128_KEY_SIZE] = {
     0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 
     0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
@@ -67,4 +65,8 @@ int main(void)
     printf("%02x", block[i]);
   }
   printf("\n");
+}
+
+int main(void)
+{
 }

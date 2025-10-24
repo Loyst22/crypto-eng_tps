@@ -63,11 +63,6 @@ void invert_shift_rows(uint8_t block[AES_BLOCK_SIZE]) {
  */
 void invert_half_round(uint8_t block[AES_BLOCK_SIZE], uint8_t roundkey[AES_128_KEY_SIZE]) 
 {
-	// 1. AddRoundKey
-	// 2. InvShiftRows
-	// 3. InvSubBytes
-
-
 	// AddRoundKey
 	for (size_t i = 0; i < AES_BLOCK_SIZE; i++) {
 		block[i] = block[i] ^ roundkey[i];
@@ -102,11 +97,11 @@ void invert_key(uint8_t key[AES_128_KEY_SIZE]) {
 	prev_aes128_round_key(tmp_key, key, 0);
 }
 
+
 /**
  * @brief
  * Generates a random key from /dev/urandom
  */
-
 void generate_random_key(uint8_t key[AES_128_KEY_SIZE]) {
     int fd = open("/dev/urandom", O_RDONLY);
     read(fd, key, AES_128_KEY_SIZE);
@@ -120,7 +115,8 @@ void generate_random_key(uint8_t key[AES_128_KEY_SIZE]) {
  * Then ciphers all the delta set according to the key provided
  */
 void gen_delta_set_and_cipher(uint8_t ciphers[256][AES_BLOCK_SIZE], uint8_t varying_byte, uint8_t key[AES_128_KEY_SIZE]) {
-	uint8_t plaintext[AES_BLOCK_SIZE] = {0x42};
+	uint8_t plaintext[AES_BLOCK_SIZE] = {0};
+
 	for (size_t i = 0; i < 256; i++) {
 		plaintext[varying_byte] = i;
 		memcpy(ciphers[i], plaintext, sizeof(uint8_t)*AES_BLOCK_SIZE);
@@ -150,11 +146,10 @@ void compute_distinguisher_for_key_guess(uint8_t ciphers[256][AES_BLOCK_SIZE], u
 		
     	// XOR block by block
     	for (size_t byte = 0; byte < AES_BLOCK_SIZE; byte++) {
-			result[byte] = result[byte] ^ ciphers[i][byte];
+  			result[byte] = result[byte] ^ ciphers[i][byte];
 		}
 	}
 
-	// print_block(result);
 }
 
 /**
@@ -210,37 +205,21 @@ void key_recovery_attack(uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_SIZE], u
 	 * 				- If not: WRONG KEY & Go to next possible value
 	 * 		- Return found key
 	 */
-	for (size_t byte = 0; byte < AES_128_KEY_SIZE; byte++) {
+	for (size_t keybyte_index = 0; keybyte_index < AES_128_KEY_SIZE; keybyte_index++) {
 		bool byte_found = false;
+
 		for (size_t guess = 0; guess < 256 && !byte_found; guess++) {
 			// reset ciphertexts
 			memcpy(ciphers, ciphers_copy, sizeof(uint8_t)*AES_BLOCK_SIZE*256*AES_BLOCK_SIZE);
 			// make a guess
-			key_guess[byte] = guess;
+			key_guess[keybyte_index] = guess;
 
 			// Try all DELTA-sets (avoid false positives)
 			bool correct_key = true;
 			for (size_t delta_set = 0; delta_set < AES_BLOCK_SIZE; delta_set++) {
 				compute_distinguisher_for_key_guess(ciphers[delta_set], key_guess, result);
-				// int acc = compute_distinguisher_for_key_guess_byte(ciphers[delta_set], key_guess, byte);
-				/*
-				DEBUG
-				*/
-				
-				// invert_key(key_guess);
-				// if(key_guess[0]==1) {
-				// 	printf("debugging\n");
-				// 	print_key(key_guess);
-				// 	print_block(result);
-				// }
-				
-				/*
-				DEBUG
-				*/
 
-				/* Don't know which one of the two if statement is correct */
-				if (!verify_result(result, delta_set)) {
-				// if (!verify_result(result, byte)) {
+				if (!verify_result(result, keybyte_index)) {
 					// WRONG KEY & Go to next possible value
 					correct_key = false;
 					break;
@@ -256,91 +235,22 @@ void key_recovery_attack(uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_SIZE], u
 	invert_key(key_guess);
 }
 
+
 int main(void)
 {
 	uint8_t key[AES_128_KEY_SIZE] = {0};
 	generate_random_key(key);
-	
-	// {
-    // 	0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 
-    // 	0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
-  	// };
 
 	uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_SIZE] = {0};
 	uint8_t recovered_key[AES_128_KEY_SIZE] = {0};
 	uint8_t key_guess[AES_128_KEY_SIZE] = {0};
-	// uint8_t tmp_key[AES_128_KEY_SIZE] = {0};
-
-	// next_aes128_round_key(key_guess, tmp_key, 0);
-  	// next_aes128_round_key(tmp_key, key_guess, 1);
-  	// next_aes128_round_key(key_guess, tmp_key, 2);
-  	// next_aes128_round_key(tmp_key, key_guess, 3);
-
-	// uint8_t plaintext[AES_BLOCK_SIZE] = {0};
 	uint8_t result[AES_BLOCK_SIZE] = {0};
 
 	gen_all_delta_sets(ciphers, key);
-
 	key_recovery_attack(ciphers, recovered_key);
-
-	// compute_distinguisher_for_key_guess(ciphers[0], key_guess, result);
-
-	// printf("Result: \n");
-	// print_block(result);
 
 	printf("Actual key: \n");
 	print_key(key);
 	printf("Recovered key: \n");
-	print_key(key_guess);
-	invert_key(key_guess);
-	print_key(key_guess);
-
-	/*
-	// plaintext = {i, 0x00, ..., 0x00} (varying byte is at position 0)
-	gen_delta_set_and_cipher(ciphers, 0, key);
-
-  	// START_TEMP: get last roundkey
-
-  	uint8_t prev_key[AES_128_KEY_SIZE];
-  	memcpy(prev_key, key, sizeof(uint8_t)*AES_128_KEY_SIZE);
-  	uint8_t next_key[AES_128_KEY_SIZE] = {0};
-  
-  	next_aes128_round_key(prev_key, next_key, 0);
-  	next_aes128_round_key(next_key, prev_key, 1);
-  	next_aes128_round_key(prev_key, next_key, 2);
-  	next_aes128_round_key(next_key, prev_key, 3);
-  	// prev_key has the correct roundkey
-
-	// END_TEMP
-	
-
-	uint8_t key_guess[AES_128_KEY_SIZE];
-
-	compute_distinguisher_for_key_guess(ciphers, prev_key, result);
-	*/
-
-  	// go through all ciphertexts
-	/*
-  	for (int i = 0; i < 256; i++) {
-    	invert_half_round(ciphers[i], prev_key);
-
-    	// XOR all bytes
-    	for (size_t byte = 0; byte < AES_BLOCK_SIZE; byte++) {
-      		result[byte] = result[byte] ^ ciphers[i][byte];
-    	} 
-  	}
-	*/
-
-	/*
-  	printf("first two ciphertexts: \n\t");
-  	print_block(ciphers[0]);
-  	printf("\n\t");
-  	print_block(ciphers[1]);
-  	printf("\n");
-
-  	// should return all zeros 
-  	printf("xor of all ciphertexts: \n\t");
-  	print_block(result);
-  	printf("\n");
-	*/
+	print_key(recovered_key);
 }
