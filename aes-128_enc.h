@@ -11,6 +11,11 @@
  */
 void aes128_enc(uint8_t block[AES_BLOCK_SIZE], const uint8_t key[AES_128_KEY_SIZE], unsigned nrounds, int lastfull);
 
+// Alternate extension field for xtime function
+void aes128_enc_alt_xtime(uint8_t block[AES_BLOCK_SIZE], const uint8_t key[AES_128_KEY_SIZE], unsigned nrounds, int lastfull);
+// Alternate SBOX
+// Alternate MDS for MixColumns
+
 /*
  * The AES S-box, duh
  */
@@ -56,6 +61,18 @@ static const uint8_t Sinv[256] =
 	0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61,
 	0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
 };
+
+
+/*
+ * Alternate S-box for different finite field 
+ * F_2[X]/X^8 + X^6 + X^5 + X^4 + X^3 + X + 1
+ *
+ * Generated using https://merri.cx/aes-sbox/
+ */
+// static const uint8_t S_alt[256] = 
+// {
+//
+// }
 
 /*
  * Compute the @round-th round key in @prev_key, given the @(round + 1)-th key in @next_key 

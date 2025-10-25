@@ -136,6 +136,30 @@ void gen_all_delta_sets(uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_SIZE], ui
 	}
 }
 
+// ------------- ALT ciphers
+
+void gen_delta_set_and_cipher_alt_xtime(uint8_t ciphers[256][AES_BLOCK_SIZE], uint8_t varying_byte, uint8_t key[AES_128_KEY_SIZE]) {
+	uint8_t plaintext[AES_BLOCK_SIZE] = {0};
+
+	for (size_t i = 0; i < 256; i++) {
+		plaintext[varying_byte] = i;
+		memcpy(ciphers[i], plaintext, sizeof(uint8_t)*AES_BLOCK_SIZE);
+	
+		aes128_enc_alt_xtime(ciphers[i], key, 4, false);
+	}
+}
+
+void gen_all_delta_sets_alt_xtime(uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_SIZE], uint8_t key[AES_128_KEY_SIZE]) {
+	for (size_t varying_byte = 0; varying_byte < AES_BLOCK_SIZE; varying_byte++) {
+		gen_delta_set_and_cipher_alt_xtime(ciphers[varying_byte], varying_byte, key);
+	}
+}
+
+
+
+// -------------- END alt ciphers
+
+
 void compute_distinguisher_for_key_guess(uint8_t ciphers[256][AES_BLOCK_SIZE], uint8_t key_guess[AES_128_KEY_SIZE], uint8_t result[AES_BLOCK_SIZE]) {
 	memset(result, 0, AES_BLOCK_SIZE);
 	// print_key(key_guess);
@@ -236,21 +260,20 @@ void key_recovery_attack(uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_SIZE], u
 }
 
 
-int main(void)
-{
-	uint8_t key[AES_128_KEY_SIZE] = {0};
-	generate_random_key(key);
-
-	uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_SIZE] = {0};
-	uint8_t recovered_key[AES_128_KEY_SIZE] = {0};
-	uint8_t key_guess[AES_128_KEY_SIZE] = {0};
-	uint8_t result[AES_BLOCK_SIZE] = {0};
-
-	gen_all_delta_sets(ciphers, key);
-	key_recovery_attack(ciphers, recovered_key);
-
-	printf("Actual key: \n");
-	print_key(key);
-	printf("Recovered key: \n");
-	print_key(recovered_key);
-}
+// int main(void)
+// {
+// 	uint8_t key[AES_128_KEY_SIZE] = {0};
+// 	generate_random_key(key);
+//
+// 	uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_SIZE] = {0};
+// 	uint8_t recovered_key[AES_128_KEY_SIZE] = {0};
+// 	uint8_t result[AES_BLOCK_SIZE] = {0};
+//
+// 	gen_all_delta_sets(ciphers, key);
+// 	key_recovery_attack(ciphers, recovered_key);
+//
+// 	printf("Actual key: \n");
+// 	print_key(key);
+// 	printf("Recovered key: \n");
+// 	print_key(recovered_key);
+// }

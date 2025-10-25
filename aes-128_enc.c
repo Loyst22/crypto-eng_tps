@@ -97,6 +97,65 @@ void aes_round(uint8_t block[AES_BLOCK_SIZE], uint8_t round_key[AES_BLOCK_SIZE],
 }
 
 /*
+ *  Alternate aes_round using different extension field for xtime function 
+ */
+void aes_round_alt_xtime(uint8_t block[AES_BLOCK_SIZE], uint8_t round_key[AES_BLOCK_SIZE], int lastround)
+{
+	int i;
+	uint8_t tmp;
+
+	/*
+	 * SubBytes + ShiftRow
+	 */
+	/* Row 0 */
+	block[ 0] = S[block[ 0]];
+	block[ 4] = S[block[ 4]];
+	block[ 8] = S[block[ 8]];
+	block[12] = S[block[12]];
+	/* Row 1 */
+	tmp = block[1];
+	block[ 1] = S[block[ 5]];
+	block[ 5] = S[block[ 9]];
+	block[ 9] = S[block[13]];
+	block[13] = S[tmp];
+	/* Row 2 */
+	tmp = block[2];
+	block[ 2] = S[block[10]];
+	block[10] = S[tmp];
+	tmp = block[6];
+	block[ 6] = S[block[14]];
+	block[14] = S[tmp];
+	/* Row 3 */
+	tmp = block[15];
+	block[15] = S[block[11]];
+	block[11] = S[block[ 7]];
+	block[ 7] = S[block[ 3]];
+	block[ 3] = S[tmp];
+
+	/*
+	 * MixColumns
+	 */
+	for (i = lastround; i < 16; i += 4) /* lastround = 16 if it is the last round, 0 otherwise */
+	{
+		uint8_t *column = block + i;
+		uint8_t tmp2 = column[0];
+		tmp = column[0] ^ column[1] ^ column[2] ^ column[3];
+
+		column[0] ^= tmp ^ xtime_alt(column[0] ^ column[1]);
+		column[1] ^= tmp ^ xtime_alt(column[1] ^ column[2]);
+		column[2] ^= tmp ^ xtime_alt(column[2] ^ column[3]);
+		column[3] ^= tmp ^ xtime_alt(column[3] ^ tmp2);
+	}
+
+	/*
+	 * AddRoundKey
+	 */
+	for (i = 0; i < 16; i++)
+	{
+		block[i] ^= round_key[i];
+	}
+}
+/*
  * Compute the @(round + 1)-th round key in @next_key, given the @round-th key in @prev_key
  * @round in {0...9}
  * The ``master key'' is the 0-th round key 
@@ -171,3 +230,41 @@ void aes128_enc(uint8_t block[AES_BLOCK_SIZE], const uint8_t key[AES_128_KEY_SIZ
 		aes_round(block, ekey + nk, 16);
 	}
 }
+
+
+/* AES with different extension field for xtime function.
+ *
+ * Encrypt @block with @key over @nrounds. If @lastfull is true, the last round includes MixColumn, otherwise it doesn't.
+ * @nrounds <= 10
+ */
+void aes128_enc_alt_xtime(uint8_t block[AES_BLOCK_SIZE], const uint8_t key[AES_128_KEY_SIZE], unsigned nrounds, int lastfull)
+{
+	uint8_t ekey[32];
+	int i, pk, nk;
+
+	for (i = 0; i < 16; i++)
+	{
+		block[i] ^= key[i];
+		ekey[i]   = key[i];
+	}
+	next_aes128_round_key(ekey, ekey + 16, 0);
+
+	pk = 0;
+	nk = 16;
+	for (i = 1; i < nrounds; i++)
+	{
+		aes_round_alt_xtime(block, ekey + nk, 0);
+		pk = (pk + 16) & 0x10;
+		nk = (nk + 16) & 0x10;
+		next_aes128_round_key(ekey + pk, ekey + nk, i);
+	}
+	if (lastfull)
+	{
+		aes_round_alt_xtime(block, ekey + nk, 0);
+	}
+	else
+	{
+		aes_round_alt_xtime(block, ekey + nk, 16);
+	}
+}
+
