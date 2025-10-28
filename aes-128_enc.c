@@ -29,7 +29,7 @@ uint8_t xtime_alt(uint8_t p)
 	m ^= 1;
 	m -= 1;
 
-	m &= 0b001111011;
+	m &= 0b01111011;
 
 	return ((p << 1) ^ m);
 }
