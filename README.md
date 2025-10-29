@@ -4,9 +4,12 @@ by Louis Coatelan & Thomas Lehrach
 
 ## Compilation
 
-```bash
-clang aes-128_enc.c aes-128_enc.h attack.c tests.c -Wall
+```sh
+make
 ```
 
-Then just execute
-`> ./a.out`
+then execute using
+
+```sh
+./tests
+```

@@ -20,4 +20,6 @@ void gen_all_delta_sets_alt_sbox(uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_
 void key_recovery_attack(uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_SIZE], uint8_t key_guess[AES_128_KEY_SIZE]);
 void key_recovery_attack_alt_sbox(uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK_SIZE], uint8_t key_guess[AES_128_KEY_SIZE]);
 
+int keyed_func_distinguisher(uint8_t key[2 * AES_128_KEY_SIZE], uint8_t result[AES_BLOCK_SIZE]);
+
 #endif // !ATTACK_H

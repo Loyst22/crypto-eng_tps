@@ -5,6 +5,7 @@
  * 	Coatelan Louis
  */
 
+#include "keyed_function.h"
 #include "aes-128_enc.h"
 #include <sys/random.h>
 #include <stdio.h>
@@ -377,4 +378,25 @@ void key_recovery_attack_alt_sbox(uint8_t ciphers[AES_BLOCK_SIZE][256][AES_BLOCK
 	}
 
 	invert_key(key_guess);
+}
+
+void keyed_func_distinguisher(uint8_t key[2 * AES_128_KEY_SIZE], uint8_t result[AES_BLOCK_SIZE])
+{
+  uint8_t plaintext[AES_BLOCK_SIZE] = {0}; 
+  uint8_t ciphers[256][AES_BLOCK_SIZE] = {0};
+
+  // compute all ciphers while varying byte 0
+  for (size_t i = 0; i < 256; i++) {
+    plaintext[0] = i;
+    memcpy(ciphers[i], plaintext, sizeof(uint8_t)*AES_BLOCK_SIZE);
+
+    keyed_func(key, ciphers[i]);
+  }
+
+  // XOR all ciphertexts
+  for (size_t i = 0; i < 256; i++) {
+    for (size_t byte = 0; byte < AES_BLOCK_SIZE; byte++) {
+    result[byte] ^= ciphers[i][byte];
+    }
+  }
 }

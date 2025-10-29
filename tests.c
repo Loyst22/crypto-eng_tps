@@ -1,5 +1,6 @@
 #include "aes-128_enc.h"
 #include "attack.h"
+#include "keyed_function.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/random.h>
@@ -27,6 +28,27 @@ uint32_t test_recover_key() {
   }
   return true;
 }
+
+uint32_t test_keyed_func_distinguisher() {
+  printf("Running 3-round distinguisher on keyed function construction:\n");
+
+	uint8_t key[2 * AES_128_KEY_SIZE] = {0};
+	generate_random_key(key);
+  generate_random_key(&key[AES_128_KEY_SIZE]);
+
+  uint8_t result[AES_BLOCK_SIZE] = {0};
+  keyed_func_distinguisher(key, result);
+
+	printf("key: \n");
+	print_key(key);
+	print_key(&key[AES_128_KEY_SIZE]);
+  printf("XOR of all Ciphers\n");
+  print_block(result);
+  printf("\n");
+
+  return 0;
+}
+
 
 uint32_t test_round_key_inv() {
   uint32_t errors = 0;
@@ -190,10 +212,16 @@ uint32_t compare_aes_ciphers() {
   printf("Alt S-box AES ciphered block:\n");
   print_block(block_2);
   printf("\n");
+
+  return 0;
 }
 
 int main(void)
 {
+  printf("-------------------Keyed Function Construction---------------------------\n");
+  test_trivial_key();
+  test_keyed_func_distinguisher();
+
   printf("-------------------Comparing ciphertext of all cipher variations---------------------------\n");
   compare_aes_ciphers();
   printf("-------------------Running attack on all cipher variations---------------------------------\n");
