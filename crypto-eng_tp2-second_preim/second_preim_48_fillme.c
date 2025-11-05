@@ -200,6 +200,9 @@ uint64_t hs48(const uint32_t *m, uint64_t fourlen, int padding, int verbose)
 uint64_t get_cs48_dm_fp(uint32_t m[4])
 {
 	/* FILL ME */
+	uint32_t fp[2];
+    uint32_t c[2] = {0};
+	speck48_96_inv(m, c, fp)
 }
 
 /* Finds a two-block expandable message for hs48, using a fixed-point
