@@ -117,31 +117,6 @@ void speck48_96_inv(const uint32_t k[4], const uint32_t c[2], uint32_t p[2])
 	return;
 }
 
-/* Test against EP 2013/404, App. C */
-bool test_vector_okay()
-{
-    uint32_t k[4] = {0x1a1918, 0x121110, 0x0a0908, 0x020100};
-    uint32_t p[2] = {0x6d2073, 0x696874};
-    uint32_t c[2];
-    speck48_96(k, p, c);
-    printf("c = %X || %X\n", c[0], c[1]);
-
-    return (c[0] == 0x735E10) && (c[1] == 0xB6445D);
-}
-
-bool test_sp48_inv()
-{
-    uint32_t k[4] = {0x1a1918, 0x121110, 0x0a0908, 0x020100};
-    uint32_t p[2] = {0x6d2073, 0x696874};
-	uint32_t p_verif[2] = {0};
-    uint32_t c[2];
-    speck48_96(k, p, c);
-	speck48_96_inv(k, c, p_verif);
-    printf("p = %X || %X\n", p_verif[0], p_verif[1]);
-
-    return (p[0] == p_verif[0]) && (p[1] == p_verif[1]);
-}
-
 /* The Davies-Meyer compression function based on speck48_96,
  * using an XOR feedforward
  * The input/output chaining value is given on the 48 low bits of a single 64-bit word,
@@ -202,7 +177,9 @@ uint64_t get_cs48_dm_fp(uint32_t m[4])
 	/* FILL ME */
 	uint32_t fp[2];
     uint32_t c[2] = {0};
-	speck48_96_inv(m, c, fp)
+	speck48_96_inv(m, c, fp);
+
+	return CONV_24_to_48(fp);
 }
 
 /* Finds a two-block expandable message for hs48, using a fixed-point
@@ -211,6 +188,42 @@ uint64_t get_cs48_dm_fp(uint32_t m[4])
 void find_exp_mess(uint32_t m1[4], uint32_t m2[4])
 {
 	/* FILL ME */
+}
+
+/* Test against EP 2013/404, App. C */
+bool test_vector_okay()
+{
+    uint32_t k[4] = {0x1a1918, 0x121110, 0x0a0908, 0x020100};
+    uint32_t p[2] = {0x6d2073, 0x696874};
+    uint32_t c[2];
+    speck48_96(k, p, c);
+    printf("c = %X || %X\n", c[0], c[1]);
+
+    return (c[0] == 0x735E10) && (c[1] == 0xB6445D);
+}
+
+bool test_sp48_inv()
+{
+    uint32_t k[4] = {0x1a1918, 0x121110, 0x0a0908, 0x020100};
+    uint32_t p[2] = {0x6d2073, 0x696874};
+	uint32_t p_verif[2] = {0};
+    uint32_t c[2];
+    speck48_96(k, p, c);
+	speck48_96_inv(k, c, p_verif);
+    printf("p = %X || %X\n", p_verif[0], p_verif[1]);
+
+    return (p[0] == p_verif[0]) && (p[1] == p_verif[1]);
+}
+
+bool test_cs48_dm_fp(void) 
+{
+	uint32_t m[4] = {0x1a1918, 0x121110, 0x0a0908, 0x020100};
+
+	uint64_t fp = get_cs48_dm_fp(m);
+
+	printf("output for cs48_dm: %d\n", cs48_dm(m, fp));
+
+	return (cs48_dm(m, fp) == 0);
 }
 
 void attack(void)
