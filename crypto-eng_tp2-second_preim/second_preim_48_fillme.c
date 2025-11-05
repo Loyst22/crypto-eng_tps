@@ -54,7 +54,8 @@ void speck48_96(const uint32_t k[4], const uint32_t p[2], uint32_t c[2])
 	*/
 	for (unsigned i = 0; i < 23; i++)
 	{
-		c[0] = ((ROTL24_16(c[2]) + c[1]) ^ rk[i]) & 0xFFFFFF; // addition (+) is done mod 2**24
+		c[2] = c[0]; // tmp value storing x
+		c[0] = ((ROTL24_16(c[0]) + c[1]) ^ rk[i]) & 0xFFFFFF; // addition (+) is done mod 2**24
 		c[1] = ROTL24_3(c[1]) ^ c[0];
 	}
 	// end of the loop, ciphertext is in c[0] and c[1]
@@ -66,6 +67,47 @@ void speck48_96(const uint32_t k[4], const uint32_t p[2], uint32_t c[2])
 void speck48_96_inv(const uint32_t k[4], const uint32_t c[2], uint32_t p[2])
 {
 	/* FILL ME */
+	uint32_t rk[23];
+	uint32_t ell[3] = {k[2], k[1], k[0]};
+
+	rk[0] = k[3];
+
+	p[0] = c[0];
+	p[1] = c[1];
+
+	/* full key schedule */
+	/*
+	--------------------------- key expansion --------------------------
+		for i = 0..T-2
+			l[i+m-1] ← (k[i] + S−α l[i]) ⊕ i
+			k[i+1] ← Sβ k[i] ⊕ l[i+m-1]
+		end for
+	*/
+	for (unsigned i = 0; i < 22; i++)
+	{
+		uint32_t new_ell = ((ROTL24_16(ell[0]) + rk[i]) ^ i) & 0xFFFFFF; // addition (+) is done mod 2**24
+		rk[i+1] = ROTL24_3(rk[i]) ^ new_ell;
+		ell[0] = ell[1];
+		ell[1] = ell[2];
+		ell[2] = new_ell;
+	}
+
+	/* full decyption */
+	/*
+	---------------------------- decryption ----------------------------
+	for i = 0..T-1
+		x ← (S−α x + y) ⊕ k[i]
+		y ← Sβy ⊕ x
+	end for
+	*/
+	for (int32_t i = 22; i >= 0; i--)
+	{
+		p[1] = ROTL24_21(p[1] ^ p[0]);
+		p[0] = ROTL24_8((p[0] ^ rk[i]) - p[1]) & 0xFFFFFF; // addition (+) is done mod 2**24
+	}
+	// end of the loop, plaintext is in p[0] and p[1]
+
+	return;
 }
 
 /* Test against EP 2013/404, App. C */
@@ -78,6 +120,19 @@ bool test_vector_okay()
     printf("%X %X\n", c[0], c[1]);
 
     return (c[0] == 0x735E10) && (c[1] == 0xB6445D);
+}
+
+bool test_sp48_inv()
+{
+    uint32_t k[4] = {0x1a1918, 0x121110, 0x0a0908, 0x020100};
+    uint32_t p[2] = {0x6d2073, 0x696874};
+	uint32_t p_verif[2] = {0};
+    uint32_t c[2];
+    speck48_96(k, p, c);
+	speck48_96_inv(k, c, p_verif);
+    printf("%X %X\n", p_verif[0], p_verif[1]);
+
+    return (p[0] == p_verif[0]) && (p[1] == p_verif[0]);
 }
 
 /* The Davies-Meyer compression function based on speck48_96,

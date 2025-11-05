@@ -17,6 +17,8 @@
 
 bool test_vector_okay();
 
+bool test_sp48_inv();
+
 // called with 0 < k < 64, so no need for reductions to avoid UB
 static inline uint64_t __my_little_xoshiro_rotl(const uint64_t x, int k) {
 	return (x << k) | (x >> (64 - k));
