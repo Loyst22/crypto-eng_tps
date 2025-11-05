@@ -1,7 +1,7 @@
 CC = clang 
 CFLAGS = -g -Wall
 SRCS = second_preim_48_fillme.c tests.c
-HDR = xoshiro.h 
+HDR = xoshiro.h second_preim.h
 TARGET = tests 
 
 all: $(TARGET)

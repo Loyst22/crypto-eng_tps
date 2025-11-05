@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <math.h>
 
+#include "second_preim.h"
+
 #define ROTL24_16(x) ((((x) << 16) ^ ((x) >> 8)) & 0xFFFFFF)
 #define ROTL24_3(x) ((((x) << 3) ^ ((x) >> 21)) & 0xFFFFFF)
 
@@ -11,6 +13,9 @@
 #define ROTL24_21(x) ((((x) << 21) ^ ((x) >> 3)) & 0xFFFFFF)
 
 #define IV 0x010203040506ULL 
+
+#define MASK_24 0xFFFFFF
+#define CONV_24_to_48(x) ((x[0] & MASK_24) ^ ((x[1] & MASK_24) << 24))
 
 /*
  * the 96-bit key is stored in four 24-bit chunks in the low bits of k[0]...k[3]
@@ -62,6 +67,8 @@ void speck48_96(const uint32_t k[4], const uint32_t p[2], uint32_t c[2])
 
 	return;
 }
+
+
 
 /* the inverse cipher */
 void speck48_96_inv(const uint32_t k[4], const uint32_t c[2], uint32_t p[2])
@@ -143,7 +150,18 @@ bool test_sp48_inv()
  */
 uint64_t cs48_dm(const uint32_t m[4], const uint64_t h)
 {
-	/* FILL ME */
+    uint32_t p[2];
+    p[0] = (h & MASK_24);
+    p[1] = ((h & (MASK_24 << 24)) >> 24);
+
+    uint32_t c[2];
+
+    speck48_96(m, p, c);
+
+    uint64_t c_combined = CONV_24_to_48(c); 
+    uint64_t output = c_combined ^ h;
+
+    return output;
 }
 
 /* Assumes message length is fourlen * four blocks of 24 bits, each stored as the low bits of 32-bit words

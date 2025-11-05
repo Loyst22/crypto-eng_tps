@@ -1,5 +1,15 @@
 #include "xoshiro.h"
+#include <stdbool.h>
+#include "second_preim.h"
 
+int test_cs48_dm(void) {
+  const uint32_t m[4] = {0, 1, 2, 3};
+  const uint64_t h = 0x010203040506;
+
+  uint64_t result = cs48_dm(m, h);
+
+  return (result == 0x5DFD97183F91);
+}
 
 int main(void)
 {
@@ -8,6 +18,9 @@ int main(void)
 	} else {
 		printf("Incorrect implementation of speck48_96\n");
 	}
+  
+  int res = test_cs48_dm();
+  printf("%d\n", res);
 
 	if (test_sp48_inv()) {
     	printf("Correct implementation of speck48_96_inv\n");
