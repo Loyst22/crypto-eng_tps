@@ -28,6 +28,13 @@ void speck48_96(const uint32_t k[4], const uint32_t p[2], uint32_t c[2])
 	c[1] = p[1];
 
 	/* full key schedule */
+	/*
+	--------------------------- key expansion --------------------------
+		for i = 0..T-2
+			l[i+m-1] ← (k[i] + S−α l[i]) ⊕ i
+			k[i+1] ← Sβ k[i] ⊕ l[i+m-1]
+		end for
+	*/
 	for (unsigned i = 0; i < 22; i++)
 	{
 		uint32_t new_ell = ((ROTL24_16(ell[0]) + rk[i]) ^ i) & 0xFFFFFF; // addition (+) is done mod 2**24
@@ -37,10 +44,20 @@ void speck48_96(const uint32_t k[4], const uint32_t p[2], uint32_t c[2])
 		ell[2] = new_ell;
 	}
 
+	/* full encryption */
+	/*
+	---------------------------- encryption ----------------------------
+	for i = 0..T-1
+		x ← (S−α x + y) ⊕ k[i]
+		y ← Sβy ⊕ x
+	end for
+	*/
 	for (unsigned i = 0; i < 23; i++)
 	{
-		/* FILL ME */
+		c[0] = ((ROTL24_16(c[2]) + c[1]) ^ rk[i]) & 0xFFFFFF; // addition (+) is done mod 2**24
+		c[1] = ROTL24_3(c[1]) ^ c[0];
 	}
+	// end of the loop, ciphertext is in c[0] and c[1]
 
 	return;
 }
@@ -125,9 +142,9 @@ void attack(void)
 	/* FILL ME */
 }
 
-int main()
-{
-	attack();
+// int main()
+// {
+// 	attack();
 
-	return 0;
-}
+// 	return 0;
+// }

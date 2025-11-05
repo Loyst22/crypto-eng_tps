@@ -1,8 +1,13 @@
+#include "xoshiro.h"
 
 
-
-int int main(void)
+int main(void)
 {
+  if (test_vector_okay()) {
+		printf("Correct implementation of speck48_96\n");
+	} else {
+		printf("Incorrect implementation of speck48_96\n");
+	}
 
-  reutrn 0;
+  return 0;
 }
