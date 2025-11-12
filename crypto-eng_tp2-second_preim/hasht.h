@@ -25,7 +25,7 @@ void insert(entry *ht, size_t size, const uint64_t key, uint32_t message[4]) {
 
 uint32_t *lookup(entry *ht, size_t size, const int64_t key) {
     unsigned int idx = hash(key, size);
-    if (ht[idx].key & MASK_48 == key & MASK_48)
+    if ((ht[idx].key & MASK_48) == (key & MASK_48))
         return ht[idx].message;
     return NULL;
 }

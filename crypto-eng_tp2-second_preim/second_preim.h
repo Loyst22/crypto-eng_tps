@@ -1,6 +1,9 @@
 #ifndef SECOND_PREIM_H
 #define SECOND_PREIM_H
 
+#include <stdint.h>
+#include <stdio.h>
+
 #define MASK_24 0xFFFFFFULL
 #define CONV_24_to_48(x) ( ((uint64_t)(x[0] & MASK_24)) | ((uint64_t)(x[1] & MASK_24) << 24) )
 #define MASK_48 0xFFFFFFFFFFFFULL

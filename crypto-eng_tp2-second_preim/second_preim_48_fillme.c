@@ -5,9 +5,9 @@
 #include <math.h>
 #include <string.h>
 
+#include "xoshiro.h"
 #include "second_preim.h"
 #include "hasht.h"
-#include "xoshiro.h"
 
 #define ROTL24_16(x) ((((x) << 16) ^ ((x) >> 8)) & 0xFFFFFF)
 #define ROTL24_3(x) ((((x) << 3) ^ ((x) >> 21)) & 0xFFFFFF)
@@ -217,7 +217,7 @@ void find_exp_mess(uint32_t m1[4], uint32_t m2[4])
 		// hashtable lookup
 		m_collision = lookup(hashtable_h, N, fp);
 		if (m_collision != NULL) {
-			if (cs48_dm(m_collision, IV) & MASK_48 == fp & MASK_48) {
+			if ((cs48_dm(m_collision, IV) & MASK_48) == (fp & MASK_48)) {
 				for (uint16_t i = 0; i < 4; i++) {
 					m1[i] = m_collision[i];
 				}

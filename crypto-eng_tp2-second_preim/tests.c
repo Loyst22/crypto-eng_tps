@@ -1,5 +1,5 @@
-#include "xoshiro.h"
 #include <stdbool.h>
+#include <string.h>
 #include "second_preim.h"
 
 /* Test against EP 2013/404, App. C */
