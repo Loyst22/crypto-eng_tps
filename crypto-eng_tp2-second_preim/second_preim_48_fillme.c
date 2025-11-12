@@ -188,6 +188,7 @@ uint64_t get_cs48_dm_fp(uint32_t m[4])
 void find_exp_mess(uint32_t m1[4], uint32_t m2[4])
 {
 	/* FILL ME */
+	printf("Starting MitM\n");
 
 	entry *hashtable_h = malloc(sizeof(entry) * N);
 	memset(hashtable_h, 0, sizeof(entry) * N);
@@ -204,6 +205,8 @@ void find_exp_mess(uint32_t m1[4], uint32_t m2[4])
 		h = cs48_dm(m1, IV);
 		insert(hashtable_h, N, h, m1);
 	}
+
+	printf("First part of MitM done\n");
 
 	bool collision = false;
 	uint32_t* m_collision;

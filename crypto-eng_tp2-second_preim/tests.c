@@ -136,7 +136,7 @@ int main(void)
 
 	printf("================ Part 2 ================\n\n");
 
-  	printf("Question 1\n  ");
+  	printf("Question 1\n    ");
   	if (test_em()) {
 		printf("Correct implementation of find_exp_mess\n\n");
 	} else {
