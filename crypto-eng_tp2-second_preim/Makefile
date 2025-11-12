@@ -1,5 +1,5 @@
 CC = clang 
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -O3 -march=native
 SRCS = second_preim_48_fillme.c tests.c
 HDR = xoshiro.h second_preim.h
 TARGET = tests 
