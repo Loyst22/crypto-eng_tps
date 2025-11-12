@@ -60,6 +60,36 @@ bool test_conv_macro(void)
 	return (x[0] == z[0] && x[1] == z[1]);
 }
 
+bool test_em(void) 
+{
+  #define N_TEST 16
+
+  uint32_t m1[4] = {0};
+  uint32_t m2[4] = {0};
+  find_exp_mess(m1, m2);
+
+  uint32_t m[4 * (1 + N_TEST)] = {0};
+
+  m[0] = m1[0];
+  m[1] = m1[1];
+  m[2] = m1[2];
+  m[3] = m1[3];
+  memcpy(&m[4], m2, sizeof(uint32_t)*4);
+  uint64_t h1 = hs48(m, 2, 0, 0); // hs48(m1||m2)
+
+  for (uint32_t i = 1; i <= N_TEST; i++) {
+
+    memcpy(&m[4 + (4 * i)], m2, sizeof(uint32_t)*4);
+    uint64_t h_i = hs48(m, (i+2), 0, 0); // hs48(m1||m2||..||m2)
+
+    if (h1 != h_i) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 int main(void)
 {
 
@@ -102,6 +132,16 @@ int main(void)
 		printf("Correct implementation of macros\n\n");
 	} else {
 		printf("Incorrect implementation of macros\n\n");
+	}
+
+
+	printf("================ Part 2 ================\n\n");
+
+  printf("Question 1\n  ");
+  if (test_em()) {
+		printf("Correct implementation of find_exp_mess\n\n");
+	} else {
+		printf("Incorrect implementation of find_exp_mess\n\n");
 	}
 
   return 0;
