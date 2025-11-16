@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <string.h>
+#include <threads.h>
 
 #include "xoshiro.h"
 #include "second_preim.h"
@@ -187,7 +188,7 @@ uint64_t get_cs48_dm_fp(uint32_t m[4])
  * where hs48_nopad is hs48 with no padding */
 void find_exp_mess(uint32_t m1[4], uint32_t m2[4])
 {
-	printf("Starting MitM\n");
+	// printf("Starting MitM\n");
 
 	entry *hashtable_h = malloc(sizeof(entry) * N);
 	memset(hashtable_h, 0, sizeof(entry) * N);
@@ -205,7 +206,7 @@ void find_exp_mess(uint32_t m1[4], uint32_t m2[4])
 		insert(hashtable_h, N, h, m1);
 	}
 
-	printf("First part of MitM done\n");
+	// printf("First part of MitM done\n");
 
 	bool collision = false;
 	uint32_t* m_collision;
@@ -224,12 +225,27 @@ void find_exp_mess(uint32_t m1[4], uint32_t m2[4])
 					m1[i] = m_collision[i];
 				}
 			}
+			free(hashtable_h);
 			return;
 		}
 	}
+	free(hashtable_h);
 	return;
 }
 
+void gen_intermediate_hashes(uint64_t *intermediate_hashes)
+{
+	uint32_t *message = malloc(sizeof(uint32_t) * (4 * (N_BLOCKS)));
+	for (int i = 0; i < (1 << 20); i+=4)
+	{
+		message[i + 0] = i;
+		message[i + 1] = 0;
+		message[i + 2] = 0;
+		message[i + 3] = 0;
+		intermediate_hashes[ (i / 4) ] = hs48(message, (i / 4), false, false);
+	}
+
+}
 
 
 void attack(void)
@@ -246,6 +262,26 @@ void attack(void)
 	*/	
 
 
+	uint32_t m1[4];
+	uint32_t m2[4]; // chainable block
+	find_exp_mess(m1, m2);
+	uint64_t fp = get_cs48_dm_fp(m2);
+
+	uint64_t *intermediate_hashes = malloc(sizeof(uint64_t) * (N_BLOCKS + 1));
+	gen_intermediate_hashes(intermediate_hashes);
+
+	// find intermediate hash == fp
+	for (size_t i = 0; i < N_BLOCKS; i++)
+	{
+		if (intermediate_hashes[i] == fp)
+		{
+			printf("found at %d", i);
+		}
+		
+	}
+	// If nothing found then repeat with other fp
+	
+	free(intermediate_hashes);
 }
 
 // int main()

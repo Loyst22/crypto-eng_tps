@@ -10,6 +10,9 @@
 
 #define N 16777216 // 2^24
 
+#define N_BLOCKS (1 << 18)
+
+
 
 void speck48_96(const uint32_t k[4], const uint32_t p[2], uint32_t c[2]);
 void speck48_96_inv(const uint32_t k[4], const uint32_t c[2], uint32_t p[2]);

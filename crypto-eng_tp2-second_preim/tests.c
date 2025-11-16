@@ -159,8 +159,11 @@ int main(void)
 
 	printf("Question 2\n	");
 	uint32_t *m = message();
-	uint64_t h = hs48(m, (1 << 18), true, true); // message hashed with padding enabled
+	uint64_t h = hs48(m, (1 << 18), true, false); // message hashed with padding enabled
 	printf("hash: %llx", h);
+
+	printf("Attack:\n");
+	attack();
 
 	// @262143 : 0FFFFC 000000 000000 000000 => 8DBF3F6B87D8
 	// @262144 : 040000 000000 000000 000000 => 7CA651E182DB <-- Padding / length
