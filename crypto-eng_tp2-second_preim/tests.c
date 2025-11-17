@@ -61,6 +61,14 @@ bool test_conv_macro(void)
 	return (x[0] == z[0] && x[1] == z[1]);
 }
 
+void print_m(uint32_t *m, uint32_t len)
+{
+  for (size_t i = 0; i < len; i++) {
+    printf("m[%zu]: %d, ", i, m[i]);
+  }
+  printf("\n");
+}
+
 bool test_em(void) 
 {
   	#define N_TEST 16
@@ -82,6 +90,11 @@ bool test_em(void)
 
     	memcpy(&m[4 + (4 * i)], m2, sizeof(uint32_t)*4);
     	uint64_t h_i = hs48(m, (i+2), 0, 0); // hs48(m1||m2||..||m2)
+    
+      // TODO: debug print
+      // print_m(m, 4 + (4 * i));
+      // printf("h_%d: %d\n", i, h_i);
+      
 
     	if (h1 != h_i) {
     	  return false;
@@ -160,10 +173,14 @@ int main(void)
 	printf("Question 2\n	");
 	uint32_t *m = message();
 	uint64_t h = hs48(m, (1 << 18), true, false); // message hashed with padding enabled
-	printf("original hash: %llx\n", h);
+	printf("\toriginal message hash: %lx\n", h);
 
 	printf("Attack:\n");
-	attack();
+	if (attack()) {
+    printf("\tCorrect implementation of attack\n\n");
+  } else {
+    printf("\tIncorrect implementation of attack\n\n");
+  }
 
 	// @262143 : 0FFFFC 000000 000000 000000 => 8DBF3F6B87D8
 	// @262144 : 040000 000000 000000 000000 => 7CA651E182DB <-- Padding / length

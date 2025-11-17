@@ -268,7 +268,7 @@ bool attack(void)
 		// 	printf("hashtable at 0x%x / 0x%x\n", i, (1 << 20));
 		// }
 	}
-	printf("built hashtable\n");
+	printf("\tbuilt hashtable\n");
 	// now we have all the intermediate hashes and can look those up fast
 
 
@@ -290,7 +290,7 @@ bool attack(void)
 		uint64_t hash = cs48_dm(random_m, fp);
 		i_block = lookup_hash(hashtable_h, hash);
 	}
-	printf("Found block %d\n", i_block);
+	printf("\nFound block %d\n", i_block);
 
 	// Build second pre-image by just replacing first
 	memcpy(&message[0], m1, sizeof(uint32_t) * 4);
@@ -303,14 +303,12 @@ bool attack(void)
 	
 	// Test collision
 	uint64_t h = hs48(message, (1 << 18), true, false); // message hashed with padding enabled
-	printf("hash: %llx\n", h);
+	printf("hash: %lx\n", h);
 	if (h == ORIGINAL_HASH)
 	{
-		printf("Found second pre-image!!\n");
 		return true;
 	} else 
 	{
-		printf("Something went wrong. Hash at the end is incorrect\n");
 		return false;
 	}
 	
