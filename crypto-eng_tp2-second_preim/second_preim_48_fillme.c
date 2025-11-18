@@ -19,7 +19,7 @@
 
 #define IV 0x010203040506ULL 
 
-#define N_THREADS 11
+#define N_THREADS 12
 
 /*
  * the 96-bit key is stored in four 24-bit chunks in the low bits of k[0]...k[3]
