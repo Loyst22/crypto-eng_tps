@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # because it was pretty simple and not part of the questions we thought this would be fine.
 # no other code used generative ai
 
-NUM_RUNS = 10
+NUM_RUNS = 30
 NUM_THREADS = 12
 
 
