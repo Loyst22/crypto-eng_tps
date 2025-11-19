@@ -5,6 +5,7 @@
 #define __MUL11585_H
 
 #include <stdint.h>
+#include <stdio.h>
 
 typedef union
 {
