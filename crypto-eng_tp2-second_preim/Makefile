@@ -15,6 +15,6 @@ attack: $(SRCS) $(HDR)
 	$(CC) $(CFLAGS) $(SRCS) $(SRCS_ATTACK) -o attack
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) attack
 
 .PHONY: all clean
