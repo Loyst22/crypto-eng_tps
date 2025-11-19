@@ -121,61 +121,61 @@ int main(void)
 {
 	printf("================ Tests ================\n\n");
 
-	printf("Question 1\n    ");
+	printf("Question 1\n");
 	if (test_vector_okay()) {
-		printf("Correct implementation of speck48_96\n\n");
+		printf("\tCorrect implementation of speck48_96\n\n");
 	} else {
-		printf("Incorrect implementation of speck48_96\n\n");
+		printf("\tIncorrect implementation of speck48_96\n\n");
 	}
   
-	printf("Question 2\n    ");
+	printf("Question 2\n");
 	if (test_sp48_inv()) {
-		printf("Correct implementation of speck48_96_inv\n\n");
+		printf("\tCorrect implementation of speck48_96_inv\n\n");
 	} else {
-		printf("Incorrect implementation of speck48_96_inv\n\n");
+		printf("\tIncorrect implementation of speck48_96_inv\n\n");
 	}
 
 
-	printf("Question 3\n    ");
+	printf("Question 3\n");
 	if (test_cs48_dm()) {
-		printf("Correct implementation of cs48_dm\n\n");
+		printf("\tCorrect implementation of cs48_dm\n\n");
 	} else {
-		printf("Incorrect implementation of cs48_dm\n\n");
+		printf("\tIncorrect implementation of cs48_dm\n\n");
 	}
 
 	// int res = test_cs48_dm();
 	// printf("%d\n", res);
 
-	printf("Question 4\n    ");
+	printf("Question 4\n");
 	if (test_cs48_dm_fp()) {
-		printf("Correct implementation of get_cs48_dm_fp\n\n");
+		printf("\tCorrect implementation of get_cs48_dm_fp\n\n");
 	} else {
-		printf("Incorrect implementation of get_cs48_dm_fp\n\n");
+		printf("\tIncorrect implementation of get_cs48_dm_fp\n\n");
 	}
 	
-	printf("Others\n    ");
+	printf("Others\n");
 	if (test_conv_macro()) {
-		printf("Correct implementation of macros\n\n");
+		printf("\tCorrect implementation of macros\n\n");
 	} else {
-		printf("Incorrect implementation of macros\n\n");
+		printf("\tIncorrect implementation of macros\n\n");
 	}
 
 
 	printf("================ Part 2 ================\n\n");
 
-  	printf("Question 1\n    ");
+  	printf("Question 1\n");
   	if (test_em()) {
-		printf("Correct implementation of find_exp_mess\n\n");
+		printf("\tCorrect implementation of find_exp_mess\n\n");
 	} else {
-		printf("Incorrect implementation of find_exp_mess\n\n");
+		printf("\tIncorrect implementation of find_exp_mess\n\n");
 	}
 
-	printf("Question 2\n	");
+	printf("Question 2\n");
 	uint32_t *m = message();
 	uint64_t h = hs48(m, (1 << 18), true, false); // message hashed with padding enabled
-	printf("\toriginal message hash: %lx\n", h);
+	printf("\tOriginal message hash: %lx\n\n", h);
 
-	printf("Attack:\n");
+	printf("\tStarting attack...\n");
 	if (attack()) {
     printf("\tCorrect implementation of attack\n\n");
   } else {
