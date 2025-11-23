@@ -20,7 +20,7 @@ static const num128 m115 = {.t = {18446744073709551615ULL, 2251799813685247ULL}}
  * Input: 0 ≤ a, b < 2**115 - 85
  * Output: 0 ≤ ab mod 2**115 - 85 < 2**115 - 85
  */
-num128 mul11585(num128 a, num128 b)
+static inline num128 mul11585(num128 a, num128 b)
 {
     num128 a0 = {.t = {0,0}};
     num128 a1 = {.t = {0,0}};
@@ -63,7 +63,7 @@ num128 mul11585(num128 a, num128 b)
     return res;
 }
 
-void print_num128(num128 a)
+static inline void print_num128(num128 a)
 {
     printf("%llX%016llX", a.t[1], a.t[0]);
 }
