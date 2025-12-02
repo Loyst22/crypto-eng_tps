@@ -31,46 +31,52 @@ num128 gexp(uint64_t x)
 //#define D 1.4901161193847656e-08 // log(W) / sqrt(W)
 
 static uint64_t e[K];
+static num128 jumps[K];
 
 typedef struct {
     num128 value;
     uint64_t exponent;
 } kangaroo;
 
-void fill_jump_exponents(uint64_t *jump_exponents) {
+void fill_jump_exponents() {
     for (uint32_t j=1; j <= K; j++)
     {
-        uint64_t e = ((2*j - 1) * MU) / K;  
-        jump_exponents[j-1] = e;
+        uint64_t exponent = ((2*j - 1) * MU) / K;  
+        e[j-1] = exponent;
+
+        num128 jump = gexp(exponent);
+        jumps[j-1] = jump;
     }
 }
 
-uint64_t pick_exponent(num128 x) {
-    uint64_t index = x.t[0] & (0b11111ULL); // take lowest 5 bits of x
-    return e[index];
+uint32_t jump_index(num128 x) {
+    uint32_t index = x.t[0] & (0b11111ULL); // take lowest 5 bits of x
+    return index;
 }
 
 void jump(kangaroo *x) {
     // kangaroo after_jump; // TODO: cant allocate on stack aaa
     
-    uint64_t e_j = pick_exponent(x->value);
-    num128 g_ej = gexp(e_j);
+    uint32_t j = jump_index(x->value);
+    uint64_t e_j = e[j];
+    num128 g_ej = jumps[j];
 
     x->value = mul11585(x->value, g_ej);
     x->exponent += e_j;
 }
 
 bool is_distinguished(kangaroo roo) {
-    const unsigned __int128 mask = (((unsigned __int128)1) << 26) - 1;
+    // const unsigned __int128 mask = (((unsigned __int128)1) << 26) - 1;
+    const unsigned __int128 mask = (((unsigned __int128)1) << 20) - 1;
 
     return (roo.value.s & mask) == 0;
 }
 
-num128 n_abs(kangaroo a, kangaroo b) {
+num128 n_abs(kangaroo roo, uint64_t stored_exp) {
     num128 result;
-    result.s = (a.exponent > b.exponent) ? 
-        (a.exponent - b.exponent) : 
-        (b.exponent - a.exponent);
+    result.s = (roo.exponent > stored_exp) ? 
+        (roo.exponent - stored_exp) : 
+        (stored_exp - roo.exponent);
     return result;
 }
 
@@ -78,7 +84,7 @@ num128 n_abs(kangaroo a, kangaroo b) {
 num128 dlog64(num128 target) {
     // we know x of h = g^x is in the interval W << N
     // interval width W = 2^64 - 1
-    fill_jump_exponents(e);
+    fill_jump_exponents();
 
     // Tame kangaroo: knows log of group element it lands on
     // wild kangaroo: knows the jumps from h
@@ -104,7 +110,7 @@ num128 dlog64(num128 target) {
 
                 // UINT_MAX -> not found
             if (exp != UINT64_MAX) {
-                return n_abs(tame, wild);
+                return n_abs(tame, exp);
 
             } else {
                 insert(traps_table, tame.value, tame.exponent);
@@ -120,7 +126,7 @@ num128 dlog64(num128 target) {
 
                 // UINT_MAX -> not found
             if (exp != UINT64_MAX) {
-                return n_abs(tame, wild);
+                return n_abs(wild, exp);
 
             } else {
                 insert(traps_table, wild.value, wild.exponent);
