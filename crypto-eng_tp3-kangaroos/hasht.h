@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "mul11585.h"
 
-#define SIZE (1 << 16)
+#define SIZE (1 << 8)
 
 typedef struct {
     num128 key;
@@ -23,5 +23,5 @@ uint64_t lookup(trap *ht, num128 key) {
     if (ht[index].key.s == key.s)
         return ht[index].exponent;
 
-    return NULL;
+    return UINT64_MAX;
 }

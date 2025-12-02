@@ -55,7 +55,16 @@ int main()
     printf("Testing dlog64():\n");
 
     num128 target = { .t = { 0xB6263BF2908A7B09ULL, 0x71AC72AF7B138ULL } };
-    dlog64(target);
+    num128 result = dlog64(target);
+
+    num128 exp = gexp(result.t[0]);
+    printf("  result: ");
+    print_num128(exp);
+    printf("\n");
+
+    printf("expected: ");
+    print_num128(target);
+    printf("\n");
 
     return 0;
 }
