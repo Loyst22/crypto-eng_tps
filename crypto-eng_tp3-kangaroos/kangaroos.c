@@ -32,6 +32,8 @@ num128 gexp(uint64_t x)
 
 static uint64_t e[K];
 static num128 jumps[K];
+static trap traps_table[SIZE];
+
 
 typedef struct {
     num128 value;
@@ -54,9 +56,7 @@ uint32_t jump_index(num128 x) {
     return index;
 }
 
-void jump(kangaroo *x) {
-    // kangaroo after_jump; // TODO: cant allocate on stack aaa
-    
+void jump(kangaroo *x) {  
     uint32_t j = jump_index(x->value);
     uint64_t e_j = e[j];
     num128 g_ej = jumps[j];
@@ -66,8 +66,7 @@ void jump(kangaroo *x) {
 }
 
 bool is_distinguished(kangaroo roo) {
-    // const unsigned __int128 mask = (((unsigned __int128)1) << 26) - 1;
-    const unsigned __int128 mask = (((unsigned __int128)1) << 20) - 1;
+    const unsigned __int128 mask = (((unsigned __int128)1) << 26) - 1;
 
     return (roo.value.s & mask) == 0;
 }
@@ -96,7 +95,6 @@ num128 dlog64(num128 target) {
     wild.value = target; // TODO: maybe deep copy?
     wild.exponent = 0;
 
-    trap traps_table[SIZE];
     memset(traps_table, 0, sizeof(trap) * SIZE);
 
     bool found = false;

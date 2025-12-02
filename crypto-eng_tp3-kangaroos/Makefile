@@ -1,7 +1,7 @@
 CC = clang 
 CFLAGS = -g -O3 -Wall -Wextra -march=native
 SRCS = kangaroos.c tests.c
-HDR = mul11585.h kangaroos.h
+HDR = mul11585.h kangaroos.h hasht.h
 TARGET = tests 
 
 all: $(TARGET)
