@@ -45,7 +45,17 @@ bool test_gexp()
 
 int main()
 {
-    test_gexp();
+    printf("Testing gexp():\n");
+    if (test_gexp()) {
+        printf("    gexp() correct ✅\n");
+    } else {
+        printf("    gexp NOT correct ❌\n");
+    }
+
+    printf("Testing dlog64():\n");
+
+    num128 target = { .t = { 0xB6263BF2908A7B09ULL, 0x71AC72AF7B138ULL } };
+    dlog64(target);
 
     return 0;
 }

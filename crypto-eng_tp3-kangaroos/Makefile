@@ -1,5 +1,5 @@
 CC = clang 
-CFLAGS = -g -Wall -Wextra -march=native
+CFLAGS = -g -O3 -Wall -Wextra -march=native
 SRCS = kangaroos.c tests.c
 HDR = mul11585.h kangaroos.h
 TARGET = tests 
