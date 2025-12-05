@@ -8,7 +8,7 @@
 
 #define W ((((unsigned __int128) 1) << 64) - 1)
 #define K 32 // log(W) / 2
-#define MU (1 << 31) // sqrt(W) / 2
+#define MU ((unsigned __int128)(1ULL << 31)) // sqrt(W) / 2
 
 
 

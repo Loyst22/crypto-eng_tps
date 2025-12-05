@@ -65,7 +65,7 @@ static inline num128 mul11585(num128 a, num128 b)
 
 static inline void print_num128(num128 a)
 {
-    printf("%llX%016llX", a.t[1], a.t[0]);
+    printf("%lX%016lX", a.t[1], a.t[0]);
 }
 
 #endif // __MUL11585_H
