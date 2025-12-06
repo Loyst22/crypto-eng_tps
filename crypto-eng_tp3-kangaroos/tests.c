@@ -55,9 +55,9 @@ int main()
     printf("Testing dlog64():\n");
 
     num128 target = { .t = { 0xB6263BF2908A7B09ULL, 0x71AC72AF7B138ULL } };
-    num128 result = dlog64(target);
+    uint64_t result = dlog64(target);
 
-    num128 exp = gexp(result.t[0]);
+    num128 exp = gexp(result);
     printf("  result: ");
     print_num128(exp);
     printf("\n");

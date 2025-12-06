@@ -56,16 +56,17 @@ typedef struct {
 } kangaroo;
 
 void fill_jump_exponents() {
-    
     // memory has to be reallocated because we might change K
     E = malloc(K * sizeof(uint64_t));
     Jumps = malloc(K * sizeof(num128));
+
+    uint64_t mask = ((MU << 1) - 1); // shift one more then -1 to flip bits 
     
     for (uint32_t j=0; j < K; j++)
     {
-        uint64_t exponent = (((uint64_t)rand() << 32) ^ (uint64_t)rand()) & 0xFFFFFFFFULL;
+        uint64_t exponent = (((uint64_t)rand() << 32) ^ (uint64_t)rand()) & mask;
         while (exponent == 0)
-            exponent = (((uint64_t)rand() << 32) ^ (uint64_t)rand()) & 0xFFFFFFFFULL;
+            exponent = (((uint64_t)rand() << 32) ^ (uint64_t)rand()) & mask;
         
         E[j] = exponent;
         Jumps[j] = gexp(exponent);
