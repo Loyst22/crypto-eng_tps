@@ -2,8 +2,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "kangaroos.h"
 #include "hasht.h"
+
+uint32_t K = 32;  // Default: log(W) / 2
+uint64_t MU = (1ULL << 31);  // Default: sqrt(W) / 2
+double d = 1.0 / (1ULL << 26);  // Default: probability 1/2^26
 
 /**
  * @brief Implements the exponentiation map x → g^x where g is a generator of the group G.
@@ -30,17 +35,16 @@ num128 gexp(uint64_t x)
     return result;
 }
 
-static uint64_t E[K];
-static num128 Jumps[K];
+// Needs to be allocated!
+static uint64_t* E = NULL;
+static num128* Jumps = NULL;
 
-// Structure to store distinguished points with their exponents
 typedef struct {
     num128 value;      // The group element
-    uint64_t exponent;  // The exponent (log value)
-    bool occupied;     // Whether this slot is used
+    uint64_t exponent;  // (log value)
+    bool occupied;
 } distinguished_point;
 
-// Arrays to store distinguished points
 static distinguished_point tame_points[SIZE];
 static distinguished_point wild_points[SIZE];
 static size_t tame_count = 0;
@@ -52,18 +56,21 @@ typedef struct {
 } kangaroo;
 
 void fill_jump_exponents() {
+    
+    // memory has to be reallocated because we might change K
+    E = malloc(K * sizeof(uint64_t));
+    Jumps = malloc(K * sizeof(num128));
+    
     for (uint32_t j=0; j < K; j++)
     {
         uint64_t exponent = (((uint64_t)rand() << 32) ^ (uint64_t)rand()) & 0xFFFFFFFFULL;
         while (exponent == 0)
-        {
             exponent = (((uint64_t)rand() << 32) ^ (uint64_t)rand()) & 0xFFFFFFFFULL;
-        }
         
         E[j] = exponent;
         Jumps[j] = gexp(exponent);
         
-        /*
+        /* Caused cycles and many headaches
         uint64_t exponent = ((2*j - 1) * MU) / K;  
         E[j-1] = exponent;
 
@@ -88,38 +95,33 @@ void jump(kangaroo *x) {
 }
 
 bool is_distinguished(kangaroo roo) {
-    const unsigned __int128 mask = (((unsigned __int128)1) << 26) - 1;
+    // d is the probability that a point is distinguished (e.g., d = 1/2^26)
+    // We need to compute the number of bits: log2(1/d)
+    uint32_t bits = (uint32_t)(-log2(d));
+    const unsigned __int128 mask = (((unsigned __int128)1) << bits) - 1;
     return (roo.value.t[0] & mask) == 0;
 }
 
-// Compare two num128 values for equality
-bool num128_equal(num128 a, num128 b) {
-    return a.s == b.s;
-}
-
-// Search for a value in the tame array
-// Returns the exponent if found, -1 if not found
+// Returns the exponent if found, else NOT_FOUND
 uint64_t lookup_tame(num128 value) {
     for (size_t i = 0; i < tame_count; i++) {
-        if (tame_points[i].occupied && num128_equal(tame_points[i].value, value)) {
+        if (tame_points[i].occupied && (tame_points[i].value.s == value.s)) {
             return tame_points[i].exponent;
         }
     }
-    return UINT64_MAX;
+    return NOT_FOUND;
 }
 
-// Search for a value in the wild array
-// Returns the exponent if found, -1 if not found
+// Returns the exponent if found, else NOT_FOUND
 uint64_t lookup_wild(num128 value) {
     for (size_t i = 0; i < wild_count; i++) {
-        if (wild_points[i].occupied && num128_equal(wild_points[i].value, value)) {
+        if (wild_points[i].occupied && (wild_points[i].value.s == value.s)) {
             return wild_points[i].exponent;
         }
     }
-    return UINT64_MAX;
+    return NOT_FOUND;
 }
 
-// Insert into tame array
 void insert_tame(num128 value, __int128_t exponent) {
     if (tame_count >= SIZE) {
         fprintf(stderr, "Error: Tame array full!\n");
@@ -131,7 +133,6 @@ void insert_tame(num128 value, __int128_t exponent) {
     tame_count++;
 }
 
-// Insert into wild array
 void insert_wild(num128 value, __int128_t exponent) {
     if (wild_count >= SIZE) {
         fprintf(stderr, "Error: Wild array full!\n");
@@ -143,8 +144,13 @@ void insert_wild(num128 value, __int128_t exponent) {
     wild_count++;
 }
 
+bool check_result(num128 target, uint64_t exponent) {
+    num128 computed = gexp(exponent);
+    return (computed.s == target.s);
+}
+
 // Returns the discrete log
-num128 dlog64(num128 target) {
+uint64_t dlog64(num128 target) {
     // we know x of h = g^x is in the interval W << N
     // interval width W = 2^64 - 1
     fill_jump_exponents();
@@ -175,13 +181,16 @@ num128 dlog64(num128 target) {
             
             // printf("Tame found distinguished point at exp=%lu\n", tame.exponent);
             
-            if (wild_exp != UINT64_MAX) {  // Found collision!
+            if (wild_exp != NOT_FOUND) {  // Found collision!
                 // At collision: g^(tame.exponent) = h * g^(wild_exp)
                 // Therefore: x = tame.exponent - wild_exp
-                printf("COLLISION! tame_exp=%lu, wild_exp=%lu\n", tame.exponent, wild_exp);
-                num128 result;
-                result.s = tame.exponent - wild_exp;
+                // printf("COLLISION! tame_exp=%lu, wild_exp=%lu\n", tame.exponent, wild_exp);
+                uint64_t result = tame.exponent - wild_exp;
+
+                if (!check_result(target, result))
+                    fprintf(stderr, "Error: dlog is incorrect!\n");
                 return result;
+
             } else {
                 insert_tame(tame.value, tame.exponent);
             }
@@ -195,13 +204,17 @@ num128 dlog64(num128 target) {
             
             // printf("Wild found distinguished point at exp=%lu\n", wild.exponent);
             
-            if (tame_exp != UINT64_MAX) {  // Found collision!
+            if (tame_exp != NOT_FOUND) {  // Found collision!
                 // At collision: g^(tame_exp) = h * g^(wild.exponent)
                 // Therefore: x = tame_exp - wild.exponent
-                printf("COLLISION! tame_exp=%lu, wild_exp=%lu\n", tame_exp, wild.exponent);
-                num128 result;
-                result.s = tame_exp - wild.exponent;
+                // printf("COLLISION! tame_exp=%lu, wild_exp=%lu\n", tame_exp, wild.exponent);
+                uint64_t result = tame_exp - wild.exponent;
+
+                if (!check_result(target, result))
+                    fprintf(stderr, "Error: dlog is incorrect!\n");
+
                 return result;
+
             } else {
                 insert_wild(wild.value, wild.exponent);
             }

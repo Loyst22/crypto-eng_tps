@@ -7,12 +7,13 @@
 #define G 4398046511104ULL
 
 #define W ((((unsigned __int128) 1) << 64) - 1)
-#define K 32 // log(W) / 2
-#define MU ((unsigned __int128)(1ULL << 31)) // sqrt(W) / 2
 
-
+// Global variables for tweaking parameters
+extern uint32_t K;
+extern uint64_t MU;
+extern double d;  // Distinguished point probability (1/d)
 
 num128 gexp(uint64_t x);
-num128 dlog64(num128 target);
+uint64_t dlog64(num128 target);
 
 #endif
